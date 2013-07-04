@@ -74,20 +74,13 @@ def output_data(ev_data_db, output_format, output_name, verbose):
         print oid_list
                             
     elif output_format == 'json':
-        db_list = []
-        for nr in ev_data_db.keys():
-            oid = ev_data_db[nr]['oid']
-            fingerprint = ev_data_db[nr]['fingerprint']
-            name = ev_data_db[nr]['name']
-            db_list.append((oid, fingerprint, name))
         if output_name:
             with open(output_name, 'wb') as json_file:
-                json.dump(db_list, json_file)
+                json.dump(ev_data_db, json_file)
         else:
-            print json.dumps(db_list)
+            print json.dumps(ev_data_db)
 
     else:
-        # Generic format.
         for oid in oid_list:
             print oid
 
@@ -143,26 +136,23 @@ def extract_data(url, verbose):
 
     # Secondary parser. Scans through the db with extracted certs
     # and builds a new db with cleaned up data containing OIDs, fingerprints
-    # and some sort of name/identifier based on CN, OU etc.
+    # and some sort of info/identifier based on CN, OU etc.
     # If we find a test certificate or OID the extracted entries for that
     # certificate is discarded.
     extracted_db = {}
     key = 0
-    tmp_oid = ""
-    tmp_fingerprint = ""
-    tmp_name = ""
     for tmp_list in tmp_db.itervalues():
         test_cert = False
-        tmp_name = tmp_list[0]
+        tmp_info = tmp_list[0]
         tmp_oid = (tmp_list[1])[1:-2]
         tmp_fingerprint = (((tmp_list[4])[1:-2]).replace(':', '')).lower()
 
-        if ("testing EV signature" in tmp_name) or\
-               ("Sample Certification Authority" in tmp_name):
+        if ("testing EV signature" in tmp_info) or\
+               ("Sample Certification Authority" in tmp_info):
             pass
         else:
             extracted_db[key] = {}
-            extracted_db[key]['name'] = tmp_name
+            extracted_db[key]['info'] = tmp_info
             extracted_db[key]['oid'] = tmp_oid
             extracted_db[key]['fingerprint'] = tmp_fingerprint
             key += 1
